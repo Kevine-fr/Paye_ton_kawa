@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'client-app' // Nom de l'image Docker à construire
+        DOCKER_IMAGE = 'client-image' // Nom de l'image Docker à construire
+        DOCKER_CONTAINER = 'Client' // Nom du conteneur Docker
         DOCKER_REGISTRY = '' // Laisser vide pour Docker Hub
         DOCKER_CREDENTIALS_ID = 'docker-hub-credentials' // ID des credentials Docker dans Jenkins
     }
@@ -46,7 +47,7 @@ pipeline {
             steps {
                 script {
                     // Lancer le conteneur Docker à partir de l'image construite
-                    sh "docker run -p 8000:8000 --name client-container -d ${DOCKER_IMAGE}"
+                    sh "docker run -p 8000:8000 --name ${DOCKER_CONTAINER} -d ${DOCKER_IMAGE}"
                 }
             }
         }
