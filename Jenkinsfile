@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'client-image' // Nom de l'image Docker à construire
-        DOCKER_CONTAINER = 'Client' // Nom du conteneur Docker
+        DOCKER_CONTAINER = 'client-container' // Nom du conteneur Docker à lancer
         DOCKER_REGISTRY = '' // Laisser vide pour Docker Hub
         DOCKER_CREDENTIALS_ID = 'docker-hub-credentials' // ID des credentials Docker dans Jenkins
     }
@@ -34,20 +34,17 @@ pipeline {
             }
         }
 
-        stage('Pull Docker Image') {
-            steps {
-                script {
-                    // Tirer l'image Docker depuis Docker Hub
-                    sh "docker pull ${DOCKER_IMAGE}"
-                }
-            }
-        }
-
         stage('Run Docker Container') {
             steps {
                 script {
+                    // Vérifier si l'image a été créée
+                    sh "docker images | grep ${DOCKER_IMAGE}"
+
+                    // Arrêter et supprimer le conteneur s'il existe déjà
+                    sh "docker rm -f ${DOCKER_CONTAINER} || true"
+
                     // Lancer le conteneur Docker à partir de l'image construite
-                    sh "docker run -p 8000:8000 --name ${DOCKER_CONTAINER} -d ${DOCKER_IMAGE}"
+                    sh "docker run -d --name ${DOCKER_CONTAINER} -p 8000:8000 ${DOCKER_IMAGE}"
                 }
             }
         }
