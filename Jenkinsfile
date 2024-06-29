@@ -22,7 +22,12 @@ pipeline {
             steps {
                 script {
                     // Arrêter et supprimer le conteneur s'il existe déjà
-                    bat "docker rm -f ${DOCKER_CONTAINER} || true"
+                    bat """
+                    docker ps -a --filter "name=${DOCKER_CONTAINER}" --format "{{.ID}}" | findstr /v "^$" > nul
+                    if %errorlevel% equ 0 (
+                        docker rm -f ${DOCKER_CONTAINER}
+                    )
+                    """
                     // Lancer le conteneur Docker à partir de l'image construite
                     bat "docker run -d --name ${DOCKER_CONTAINER} -p 8000:8000 ${DOCKER_IMAGE}"
                 }
