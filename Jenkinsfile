@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'client-image'
-        DOCKER_CONTAINER = 'client-container'
+        DOCKER_IMAGE = 'client-img'
+        DOCKER_CONTAINER = 'Client'
     }
 
     stages {
