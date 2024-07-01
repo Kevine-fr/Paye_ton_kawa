@@ -11,8 +11,8 @@ pipeline {
             steps {
                 script {
                     // Stop and remove existing container if it exists
-                    bat 'docker stop ${CONTAINER_NAME} || true'
-                    bat 'docker rm ${CONTAINER_NAME} || true'
+                    bat "docker stop ${CONTAINER_NAME} || true"
+                    bat "docker rm ${CONTAINER_NAME} || true"
                 }
             }
         }
