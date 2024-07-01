@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = 'client-img'
+        CONTAINER_NAME = 'Client'
+    }
+
     stages {
         stage('Checkout SCM') {
             steps {
@@ -10,20 +15,19 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t client-img .'
+                bat 'docker build -t ${IMAGE_NAME} .'
             }
         }
 
         // stage('Run Tests') {
         //     steps {
         //         script {
-        //             sh "docker run --rm client-img pytest"
+        //             sh "docker run --rm ${IMAGE_NAME} pytest"
         //         }
         //     }
         // }
 
-
-         stage('Run Docker Container') {
+        stage('Run Docker Container') {
             steps {
                 script {
                     def containerExists = sh(script: "docker ps -a --format '{{.Names}}' | grep -w ${CONTAINER_NAME}", returnStatus: true) == 0
@@ -39,6 +43,5 @@ pipeline {
                 }
             }
         }
-
     }
 }
