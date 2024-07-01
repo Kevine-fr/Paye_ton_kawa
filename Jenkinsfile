@@ -19,6 +19,16 @@ pipeline {
             }
         }
 
+
+         stage('Run Tests') {
+            steps {
+                script {
+                    bat "docker run --rm ${IMAGE_NAME} pytest"
+                }
+            }
+        }
+
+
         stage('Run Docker Container') {
             steps {
                 script {
