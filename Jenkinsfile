@@ -1,50 +1,43 @@
 pipeline {
     agent any
-
-    environment {
-        CONTAINER_NAME = "Client"
-        IMAGE_NAME = "client-img"
-    }
-
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
         stage('Stop and Remove Existing Container') {
             steps {
                 script {
                     try {
-                        // Stop and remove existing container if it exists
-                        bat(returnStatus: true, script: "docker stop ${CONTAINER_NAME}")
-                        bat(returnStatus: true, script: "docker rm ${CONTAINER_NAME}")
+                        sh 'docker stop client || true'
+                        sh 'docker rm client || true'
                     } catch (Exception e) {
-                        echo "Le conteneur ${CONTAINER_NAME} n'existe pas ou n'a pas pu être arrêté/effacé."
+                        echo "No existing container to stop or remove."
                     }
                 }
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("${IMAGE_NAME}")
+                    sh 'docker build -t client-img .'
                 }
             }
         }
-
         stage('Run Tests') {
             steps {
                 script {
-                    docker.image("${IMAGE_NAME}").inside("-v ${WORKSPACE}:${WORKSPACE} -w ${WORKSPACE}") {
-                        bat 'pytest'
+                    docker.image('client-img').inside('-v $WORKSPACE:/workspace -w /workspace') {
+                        sh 'pytest tests'
                     }
                 }
             }
         }
-
         stage('Run Docker Container') {
             steps {
                 script {
-                    // Run the Docker container
-                    echo "Création et lancement du conteneur ${CONTAINER_NAME}."
-                    bat "docker run -d --name ${CONTAINER_NAME} -p 8000:8000 -v ${WORKSPACE}:${WORKSPACE} -w ${WORKSPACE} ${IMAGE_NAME}"
+                    sh 'docker run -d --name client -v $WORKSPACE:/workspace -w /workspace client-img'
                 }
             }
         }
