@@ -16,9 +16,12 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                bat 'docker run --rm client-img sh -c "npm test"'
+                script {
+                    sh "docker run --rm client-img pytest"
+                }
             }
         }
+
 
         stage('Run Docker Container') {
             steps {
