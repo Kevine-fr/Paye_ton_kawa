@@ -19,8 +19,8 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 RUN pip install pytest httpx
 
 # Installation des dépendances Node.js (ajoutez package.json si nécessaire)
-# COPY package*.json ./
-# RUN npm install
+COPY package*.json ./
+RUN npm install
 
 # Exposer le port 8000 (si nécessaire)
 EXPOSE 8000
