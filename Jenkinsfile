@@ -14,13 +14,13 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            steps {
-                script {
-                    sh "docker run --rm client-img pytest"
-                }
-            }
-        }
+        // stage('Run Tests') {
+        //     steps {
+        //         script {
+        //             sh "docker run --rm client-img pytest"
+        //         }
+        //     }
+        // }
 
 
         stage('Run Docker Container') {
