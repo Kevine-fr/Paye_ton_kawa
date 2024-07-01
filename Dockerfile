@@ -3,8 +3,8 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Optionnel : Création de l'environnement virtuel (si nécessaire)
-# RUN python -m venv /venv
-# ENV PATH="/venv/bin:$PATH"
+RUN python -m venv /venv
+ENV PATH="/venv/bin:$PATH"
 
 # Copie des fichiers de l'application dans le répertoire de travail
 COPY . .
