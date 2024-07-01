@@ -11,8 +11,10 @@ pipeline {
             steps {
                 script {
                     // Stop and remove existing container if it exists
-                    bat "docker stop ${CONTAINER_NAME} || true"
-                    bat "docker rm ${CONTAINER_NAME} || true"
+                    bat """
+                    docker stop ${CONTAINER_NAME} || echo "Container ${CONTAINER_NAME} does not exist."
+                    docker rm ${CONTAINER_NAME} || echo "Container ${CONTAINER_NAME} does not exist."
+                    """
                 }
             }
         }
@@ -28,7 +30,9 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    docker.image("${IMAGE_NAME}").run("--rm", "pytest")
+                    docker.image("${IMAGE_NAME}").inside {
+                        bat 'pytest'
+                    }
                 }
             }
         }
