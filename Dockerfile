@@ -11,7 +11,7 @@ COPY . .
 
 # Installation des dépendances Python
 RUN pip install --upgrade pip && pip install -r requirements.txt
-RUN pip install pytest httpx
+RUN pip install pytest httpx pytest_asyncio
 
 # Exposer le port 8000 (si nécessaire)
 EXPOSE 8000

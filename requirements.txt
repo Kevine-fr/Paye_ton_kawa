@@ -28,6 +28,7 @@ pydantic==2.7.4
 pydantic_core==2.18.4
 Pygments==2.18.0
 pytest==8.2.2
+pytest_asyncio  # Ajout de pytest_asyncio ici
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-jose==3.3.0
