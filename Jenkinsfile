@@ -10,11 +10,13 @@ pipeline {
         stage('Stop and Remove Existing Container') {
             steps {
                 script {
-                    // Stop and remove existing container if it exists
-                    bat """
-                    docker stop ${CONTAINER_NAME} || echo "Container ${CONTAINER_NAME} does not exist."
-                    docker rm ${CONTAINER_NAME} || echo "Container ${CONTAINER_NAME} does not exist."
-                    """
+                    try {
+                        // Stop and remove existing container if it exists
+                        bat(returnStatus: true, script: "docker stop ${CONTAINER_NAME}")
+                        bat(returnStatus: true, script: "docker rm ${CONTAINER_NAME}")
+                    } catch (Exception e) {
+                        echo "Le conteneur ${CONTAINER_NAME} n'existe pas ou n'a pas pu être arrêté/effacé."
+                    }
                 }
             }
         }
