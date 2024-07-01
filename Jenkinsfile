@@ -32,7 +32,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    docker.image("${IMAGE_NAME}").inside {
+                    docker.image("${IMAGE_NAME}").inside("-v ${WORKSPACE}:${WORKSPACE} -w ${WORKSPACE}") {
                         bat 'pytest'
                     }
                 }
@@ -44,7 +44,7 @@ pipeline {
                 script {
                     // Run the Docker container
                     echo "Création et lancement du conteneur ${CONTAINER_NAME}."
-                    bat "docker run -d --name ${CONTAINER_NAME} -p 8000:8000 ${IMAGE_NAME}"
+                    bat "docker run -d --name ${CONTAINER_NAME} -p 8000:8000 -v ${WORKSPACE}:${WORKSPACE} -w ${WORKSPACE} ${IMAGE_NAME}"
                 }
             }
         }
