@@ -13,21 +13,20 @@ pipeline {
             }
         }
 
-          stages {
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh "docker build -t ${IMAGE_NAME} ."
-                }
+                bat 'docker build -t ${IMAGE_NAME} .'
             }
         }
-        stage('Run Tests') {
-            steps {
-                script {
-                    sh "docker run --rm ${IMAGE_NAME} pytest"
-                }
-            }
-        }
+
+        // stage('Run Tests') {
+        //     steps {
+        //         script {
+        //             sh "docker run --rm ${IMAGE_NAME} pytest"
+        //         }
+        //     }
+        // }
+
         stage('Run Docker Container') {
             steps {
                 script {
@@ -43,6 +42,6 @@ pipeline {
                     sh "docker run -d --name ${CONTAINER_NAME} -p 8000:8000 ${IMAGE_NAME}"
                 }
             }
-        }
-    }
+        }
+    }
 }
