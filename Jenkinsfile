@@ -23,10 +23,22 @@ pipeline {
         // }
 
 
-        stage('Run Docker Container') {
+         stage('Run Docker Container') {
             steps {
-                bat 'docker run -d --name Client -p 8000:8000 client-img'
+                script {
+                    def containerExists = sh(script: "docker ps -a --format '{{.Names}}' | grep -w ${CONTAINER_NAME}", returnStatus: true) == 0
+
+                    if (containerExists) {
+                        echo "Le conteneur ${CONTAINER_NAME} existe déjà. Arrêt et suppression du conteneur existant."
+                        sh "docker stop ${CONTAINER_NAME} || true"
+                        sh "docker rm ${CONTAINER_NAME} || true"
+                    }
+
+                    echo "Création et lancement du conteneur ${CONTAINER_NAME}."
+                    sh "docker run -d --name ${CONTAINER_NAME} -p 8000:8000 ${IMAGE_NAME}"
+                }
             }
         }
+
     }
 }
