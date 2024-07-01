@@ -26,19 +26,19 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 script {
-                    // Vérifie si le conteneur existe déjà
-                    def containerExists = docker.inside("--entrypoint='' ${IMAGE_NAME}", "docker ps -a --format '{{.Names}}' | grep -w ${CONTAINER_NAME}", returnStatus: true) == 0
+                    // Check if the container exists
+                    def containerExists = sh(script: "docker ps -a --format '{{.Names}}' | grep -w ${CONTAINER_NAME}", returnStatus: true)
 
-                    // Si le conteneur existe, l'arrête et le supprime
-                    if (containerExists) {
+                    // If the container exists, stop and remove it
+                    if (containerExists == 0) {
                         echo "Le conteneur ${CONTAINER_NAME} existe déjà. Arrêt et suppression du conteneur existant."
-                        docker.stop("${CONTAINER_NAME}")
-                        docker.remove("${CONTAINER_NAME}")
+                        sh "docker stop ${CONTAINER_NAME}"
+                        sh "docker rm ${CONTAINER_NAME}"
                     }
 
-                    // Lance le conteneur Docker
+                    // Run the Docker container
                     echo "Création et lancement du conteneur ${CONTAINER_NAME}."
-                    docker.withRun("${CONTAINER_NAME}", "--name ${CONTAINER_NAME} -p 8000:8000 ${IMAGE_NAME}")
+                    sh "docker run -d --name ${CONTAINER_NAME} -p 8000:8000 ${IMAGE_NAME}"
                 }
             }
         }
