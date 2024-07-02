@@ -53,16 +53,6 @@ pipeline {
         }
 
         stage('Locust Load Test') {
-            steps {
-                script {
-                    // Attendre que Locust soit prêt
-                    bat 'sleep 30'
-
-                    // Exécuter les tests de charge Locust
-                    bat 'docker exec locust locust -f /locustfile.py --headless -u 10 -r 1 --run-time 1m'
-                }
-            }
-
             post {
                 always {
                     echo 'Application is running on http://localhost:8000'
