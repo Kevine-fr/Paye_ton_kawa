@@ -7,29 +7,48 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        stage('Build App Image') {
             steps {
                 script {
-                    // Construire les images Docker pour l'application et Locust
+                    // Construire l'image Docker de l'application
                     bat 'docker-compose build'
                 }
             }
         }
 
-        stage('Test') {
+        stage('Build Locust Image') {
             steps {
                 script {
-                    // Exécuter les tests Pytest dans un conteneur Docker
+                    // Construire l'image Docker de Locust
+                    bat 'docker build -t $DOCKER_IMAGE_LOCUST -f Dockerfile.locust .'
+                }
+            }
+        }
+
+        stage('Run Unit Tests') {
+            steps {
+                script {
+                    // Exécuter les tests unitaires de l'application
                     bat 'docker-compose run app pytest'
                 }
             }
         }
 
-        stage('Start Application and Locust') {
+        stage('Start Application') {
             steps {
                 script {
-                    // Démarrer l'application et Locust
-                    bat 'docker-compose up -d'
+                    // Démarrer l'application
+                    bat 'docker-compose up -d app'
+                }
+            }
+        }
+
+        stage('Start Locust') {
+            steps {
+                script {
+                    // Démarrer Locust en mode headless avec les paramètres spécifiés
+                    bat 'docker-compose run locust -f locustfile.py --headless -u 10 -r 1 --run-time 1m'
+
                 }
             }
         }
@@ -37,12 +56,14 @@ pipeline {
         stage('Locust Load Test') {
             steps {
                 script {
+                    // Attendre que Locust soit prêt
+                    bat 'sleep 30'
+
                     // Exécuter les tests de charge Locust
-                    bat 'docker-compose run locust -f locustfile.py --headless -u 10 -r 1 --run-time 1m'
+                    bat 'docker exec locust locust -f locustfile.py --headless -u 10 -r 1 --run-time 1m'
                 }
             }
         }
-    }
 
     post {
         always {
