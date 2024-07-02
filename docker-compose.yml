@@ -14,8 +14,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.locust
-    volumes:
-      - ./locustfile.py:/locustfile.py  
     ports:
       - "8089:8089"
     networks:
