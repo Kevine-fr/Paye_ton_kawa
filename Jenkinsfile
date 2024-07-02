@@ -34,6 +34,15 @@ pipeline {
             }
         }
 
+        stage('Stop Unused Containers') {
+            steps {
+                script {
+                    // Arrêter et supprimer les conteneurs inutiles
+                    bat 'docker-compose down --remove-orphans'
+                }
+            }
+        }
+
         stage('Start Kawa Container') {
             steps {
                 script {
@@ -42,7 +51,6 @@ pipeline {
                 }
             }
         }
-
 
         stage('Locust Load Test') {
             steps {
