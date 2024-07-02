@@ -2,48 +2,52 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'client-img'
-        CONTAINER_NAME = 'Client'
+        DOCKER_IMAGE_APP = 'client-img'
+        DOCKER_IMAGE_LOCUST = 'client-logs'
     }
 
     stages {
-        stage('Checkout SCM') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                bat 'docker build -t %IMAGE_NAME% .'
-            }
-        }
-
-
-         stage('Run Tests') {
+        stage('Build') {
             steps {
                 script {
-                    bat "docker run --rm ${IMAGE_NAME} pytest"
+                    // Construire les images Docker pour l'application et Locust
+                    bat 'docker-compose build'
                 }
             }
         }
 
-
-        stage('Run Docker Container') {
+        stage('Test') {
             steps {
                 script {
-                    def containerExists = bat(script: "docker ps -a --format '{{.Names}}' | findstr /C:${CONTAINER_NAME}", returnStatus: true) == 0
-
-                    if (containerExists) {
-                        echo "Le conteneur ${CONTAINER_NAME} existe déjà. Arrêt et suppression du conteneur existant."
-                        bat "docker stop ${CONTAINER_NAME} || true"
-                        bat "docker rm ${CONTAINER_NAME} || true"
-                    }
-
-                    echo "Création et lancement du conteneur ${CONTAINER_NAME}."
-                    bat "docker run -d --name ${CONTAINER_NAME} -p 8000:8000 ${IMAGE_NAME}"
+                    // Exécuter les tests Pytest dans un conteneur Docker
+                    bat 'docker-compose run app pytest'
                 }
             }
+        }
+
+        stage('Start Application and Locust') {
+            steps {
+                script {
+                    // Démarrer l'application et Locust
+                    bat 'docker-compose up -d'
+                }
+            }
+        }
+
+        stage('Locust Load Test') {
+            steps {
+                script {
+                    // Exécuter les tests de charge Locust
+                    bat 'docker-compose run locust -f locustfile.py --headless -u 10 -r 1 --run-time 1m'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Application is running on http://localhost:8000'
+            echo 'Locust is running on http://localhost:8089'
         }
     }
 }

@@ -75,6 +75,31 @@ async def test_read_clients(client, token):
     assert isinstance(response.json(), list)
 
 @pytest.mark.asyncio
+async def test_read_client_by_id(client, token):
+    unique_name = f"test_client_by_id_{uuid.uuid4().hex}"  # Utilisation d'un UUID unique
+    try:
+        # Create a client first
+        create_response = await client.post(
+            "/clients/",
+            json={"name": unique_name, "email": f"{unique_name}@example.com"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert create_response.status_code == 201
+
+        client_id = create_response.json()["id"]
+
+        # Get the client by ID
+        read_response = await client.get(
+            f"/clients/{client_id}",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert read_response.status_code == 200
+        assert read_response.json()["name"] == unique_name
+        assert read_response.json()["email"] == f"{unique_name}@example.com"
+    except IntegrityError as e:
+        pytest.fail(f"Unexpected IntegrityError during client read by ID: {e.orig}")
+
+@pytest.mark.asyncio
 async def test_update_client(client, token):
     unique_name = f"update_test_{uuid.uuid4().hex}"  # Utilisation d'un UUID unique
     try:
@@ -122,5 +147,3 @@ async def test_delete_client(client, token):
         assert delete_response.json() == {"message": "Client deleted"}
     except IntegrityError as e:
         pytest.fail(f"Unexpected IntegrityError during client deletion: {e.orig}")
-
-
