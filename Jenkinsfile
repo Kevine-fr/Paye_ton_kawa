@@ -69,6 +69,7 @@ pipeline {
         always {
             echo 'Application is running on http://localhost:8000'
             echo 'Locust is running on http://localhost:8089'
+            }
         }
     }
 }
