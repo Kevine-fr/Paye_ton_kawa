@@ -63,12 +63,12 @@ pipeline {
                     bat 'docker exec locust locust -f locustfile.py --headless -u 10 -r 1 --run-time 1m'
                 }
             }
-        }
 
-    post {
-        always {
-            echo 'Application is running on http://localhost:8000'
-            echo 'Locust is running on http://localhost:8089'
+            post {
+                always {
+                    echo 'Application is running on http://localhost:8000'
+                    echo 'Locust is running on http://localhost:8089'
+                }
             }
         }
     }
