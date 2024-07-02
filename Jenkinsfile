@@ -43,25 +43,17 @@ pipeline {
             }
         }
 
-        // stage('Start Locust') {
-        //     steps {
-        //         script {
-        //             // Démarrer Locust en mode headless avec les paramètres spécifiés
-        //             bat "docker run -d --name locust -p 8089:8089 --network=bridge ${DOCKER_IMAGE_LOCUST} -f /locustfile.py --headless -u 10 -r 1 --run-time 1m"
-        //         }
-        //     }
-        // }
 
         stage('Locust Load Test') {
-            // steps {
-            //     script {
-            //         // Attendre que Locust soit prêt
-            //         bat 'sleep 30'
+            steps {
+                script {
+                    // Attendre que Locust soit prêt
+                    bat 'sleep 30'
 
-            //         // Exécuter les tests de charge Locust
-            //         bat 'docker exec locust locust -f /locustfile.py --headless -u 10 -r 1 --run-time 1m'
-            //     }
-            // }
+                    // Exécuter les tests de charge Locust
+                    bat 'docker exec locust locust -f /locustfile.py --headless -u 10 -r 1 --run-time 1m'
+                }
+            }
 
             post {
                 always {
