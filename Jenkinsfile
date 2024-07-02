@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         DOCKER_IMAGE_APP = 'client-img'
-        DOCKER_IMAGE_LOCUST = 'client-logs' // Assurez-vous que ce nom est en minuscules
+        DOCKER_IMAGE_LOCUST = 'client-logs'
+        DOCKER_NETWORK = 'kawa_net'
     }
 
     stages {
@@ -34,11 +35,15 @@ pipeline {
             }
         }
 
-        stage('Start Application') {
+        stage('Start Kawa Container') {
             steps {
                 script {
-                    // Démarrer l'application
-                    bat 'docker-compose up -d app'
+                    // Démarrer le conteneur Kawa qui inclut client-img et client-logs
+                    bat '''
+                        docker-compose up -d
+                        docker network connect ${DOCKER_NETWORK} Client
+                        docker network connect ${DOCKER_NETWORK} Locust
+                    '''
                 }
             }
         }
@@ -47,8 +52,7 @@ pipeline {
             steps {
                 script {
                     // Démarrer Locust en mode headless avec les paramètres spécifiés
-                    bat "docker run -d --name locust -p 8089:8089 ${DOCKER_IMAGE_LOCUST} -f locustfile.py --headless -u 10 -r 1 --run-time 1m"
-
+                    bat "docker run -d --name locust -p 8089:8089 --network=${DOCKER_NETWORK} ${DOCKER_IMAGE_LOCUST} -f /locustfile.py --headless -u 10 -r 1 --run-time 1m"
                 }
             }
         }
@@ -60,7 +64,7 @@ pipeline {
                     bat 'sleep 30'
 
                     // Exécuter les tests de charge Locust
-                    bat 'docker exec locust locust -f locustfile.py --headless -u 10 -r 1 --run-time 1m'
+                    bat 'docker exec locust locust -f /locustfile.py --headless -u 10 -r 1 --run-time 1m'
                 }
             }
 
