@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     // Construire l'image Docker de Locust
-                    bat 'docker build -t $DOCKER_IMAGE_LOCUST -f Dockerfile.locust .'
+                    bat "docker build -t ${DOCKER_IMAGE_LOCUST} -f Dockerfile.locust ."
                 }
             }
         }
