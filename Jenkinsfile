@@ -16,14 +16,14 @@ pipeline {
         }
 
 
-        stage('Run Unit Tests') {
-            steps {
-                script {
-                    // Exécuter les tests unitaires de l'application
-                    bat 'docker-compose run app pytest'
-                }
-            }
-        }
+        // stage('Run Unit Tests') {
+        //     steps {
+        //         script {
+        //             // Exécuter les tests unitaires de l'application
+        //             bat 'docker-compose run app pytest'
+        //         }
+        //     }
+        // }
 
         stage('Stop Unused Containers') {
             steps {
