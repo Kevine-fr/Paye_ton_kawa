@@ -5,10 +5,10 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8002:8002"
     networks:
       - kawa_net
-    container_name: Client
+    container_name: Produit
 
   locust:
     build:
