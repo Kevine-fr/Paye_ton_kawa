@@ -15,7 +15,7 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 RUN pip install pytest httpx pytest_asyncio
 
 # Exposer le port 8000 (si nécessaire)
-EXPOSE 8000
+EXPOSE 8001
 
 # Commande par défaut pour démarrer l'application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
