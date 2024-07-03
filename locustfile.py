@@ -1,6 +1,6 @@
 from locust import HttpUser, task, between
 
-class ClientApiUser(HttpUser):
+class ProductApiUser(HttpUser):
     wait_time = between(1, 5)
 
     def on_start(self):
@@ -18,6 +18,6 @@ class ClientApiUser(HttpUser):
     @task
     def get_clients(self):
         if self.token:
-            self.client.get("/clients/", headers={"Authorization": f"Bearer {self.token}"})
+            self.client.get("/products/", headers={"Authorization": f"Bearer {self.token}"})
         else:
-            print("Skipping get_clients task because login failed")
+            print("Skipping get_products task because login failed")

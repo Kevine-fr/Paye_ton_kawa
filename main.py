@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends, status
-from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy import Column, Integer, String, Float, create_engine
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from pydantic import BaseModel
 from jose import JWTError, jwt
@@ -12,32 +12,38 @@ from typing import List
 app = FastAPI()
 
 # Configure SQLALCHEMY_DATABASE_URL
-SQLALCHEMY_DATABASE_URL = "sqlite:///./client.db"
+SQLALCHEMY_DATABASE_URL = "sqlite:///./product.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
 # Define database models
-class Client(Base):
-    __tablename__ = "clients"
+class Product(Base):
+    __tablename__ = "products"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True)
-    email = Column(String, index=True)
+    name = Column(String, index=True)
+    description = Column(String)
+    image = Column(String)
+    price = Column(Float)
+    qte = Column(Integer)
 
 # Create the database tables
 Base.metadata.create_all(bind=engine)
 
 # Pydantic models
-class ClientBase(BaseModel):
+class ProductBase(BaseModel):
     name: str
-    email: str
+    description: str
+    image: str
+    price: float
+    qte: int
 
-class ClientCreate(ClientBase):
+class ProductCreate(ProductBase):
     pass
 
-class ClientResponse(ClientBase):
+class ProductResponse(ProductBase):
     id: int
 
     class Config:
@@ -51,7 +57,7 @@ def get_db():
     finally:
         db.close()
 
-# Token Settings (same as orders API)
+# Token Settings
 SECRET_KEY = "your-secret-key"  # Replace with a secure random key in production
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -59,7 +65,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Token functions (same as orders API)
+# Token functions
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -74,7 +80,7 @@ def verify_token(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
-# CRUD operations for clients
+# CRUD operations for products
 @app.post("/token", response_model=dict)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     # Replace with actual authentication logic, verify username/password
@@ -85,42 +91,42 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
-@app.post("/clients/", response_model=ClientResponse, status_code=status.HTTP_201_CREATED)
-def create_client(client: ClientCreate, db: Session = Depends(get_db), token: str = Depends(verify_token)):
-    db_client = Client(**client.dict())
-    db.add(db_client)
+@app.post("/products/", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+def create_product(product: ProductCreate, db: Session = Depends(get_db), token: str = Depends(verify_token)):
+    db_product = Product(**product.dict())
+    db.add(db_product)
     db.commit()
-    db.refresh(db_client)
-    return db_client
+    db.refresh(db_product)
+    return db_product
 
-@app.get("/clients/", response_model=List[ClientResponse])
-def read_clients(skip: int = 0, limit: int = 10, db: Session = Depends(get_db), token: str = Depends(verify_token)):
-    clients = db.query(Client).offset(skip).limit(limit).all()
-    return clients
+@app.get("/products/", response_model=List[ProductResponse])
+def read_products(skip: int = 0, limit: int = 10, db: Session = Depends(get_db), token: str = Depends(verify_token)):
+    products = db.query(Product).offset(skip).limit(limit).all()
+    return products
 
-@app.get("/clients/{client_id}", response_model=ClientResponse)
-def read_client(client_id: int, db: Session = Depends(get_db), token: str = Depends(verify_token)):
-    client = db.query(Client).filter(Client.id == client_id).first()
-    if client is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Client not found")
-    return client
+@app.get("/products/{product_id}", response_model=ProductResponse)
+def read_product(product_id: int, db: Session = Depends(get_db), token: str = Depends(verify_token)):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if product is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    return product
 
-@app.put("/clients/{client_id}", response_model=ClientResponse)
-def update_client(client_id: int, client: ClientCreate, db: Session = Depends(get_db), token: str = Depends(verify_token)):
-    db_client = db.query(Client).filter(Client.id == client_id).first()
-    if db_client is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Client not found")
-    for attr, value in client.dict().items():
-        setattr(db_client, attr, value)
+@app.put("/products/{product_id}", response_model=ProductResponse)
+def update_product(product_id: int, product: ProductCreate, db: Session = Depends(get_db), token: str = Depends(verify_token)):
+    db_product = db.query(Product).filter(Product.id == product_id).first()
+    if db_product is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    for attr, value in product.dict().items():
+        setattr(db_product, attr, value)
     db.commit()
-    db.refresh(db_client)
-    return db_client
+    db.refresh(db_product)
+    return db_product
 
-@app.delete("/clients/{client_id}")
-def delete_client(client_id: int, db: Session = Depends(get_db), token: str = Depends(verify_token)):
-    db_client = db.query(Client).filter(Client.id == client_id).first()
-    if db_client is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Client not found")
-    db.delete(db_client)
+@app.delete("/products/{product_id}")
+def delete_product(product_id: int, db: Session = Depends(get_db), token: str = Depends(verify_token)):
+    db_product = db.query(Product).filter(Product.id == product_id).first()
+    if db_product is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    db.delete(db_product)
     db.commit()
-    return {"message": "Client deleted"}
+    return {"message": "Product deleted"}
